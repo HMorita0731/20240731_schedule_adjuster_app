@@ -17,7 +17,9 @@ defmodule ScheduleAdjAppWeb.Router do
   scope "/", ScheduleAdjAppWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    #get "/", PageController, :home
+    live "/", EventLive
+    live "/event/new", EventLive, :new
   end
 
   # Other scopes may use custom stacks.
