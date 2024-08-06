@@ -1,0 +1,26 @@
+<.header>
+      新規イベント
+    </.header>
+
+    <.simple_form 
+    for={@form} 
+    phx-change="validate" 
+    phx-submit="next_page"
+    phx-trigger-action={@trigger_submit}
+    action={~p"/event/new/save"}
+    method="post"
+    >
+      <.input field={@form[:title]} type="text" label="イベント名(必須)" />
+      <.input field={@form[:name]} type="text" label="作成者名(必須)"/>
+      <.input field={@form[:pass]} type="text" label="パスワード(必須)"/>
+      <.input
+        field={@form[:memo]} type="textarea" label="備考"
+      />
+      <:actions>
+        <.button>
+          日程候補を選択する
+        </.button>
+      </:actions>
+    </.simple_form>
+
+    

@@ -19,7 +19,10 @@ defmodule ScheduleAdjAppWeb.Router do
 
     #get "/", PageController, :home
     live "/", EventLive
-    live "/event/new", EventLive, :new
+    live "/event/new", EventLive.New, :new
+    post "/event/new/save", EventController, :next_page
+    live "/event/new/date", EventLive.AddDate, :add_date
+
   end
 
   # Other scopes may use custom stacks.

@@ -13,6 +13,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      gridTemplateColumns: {
+        // Simple 16 column grid
+        '24': 'repeat(24, minmax(0, 1fr))',
+      },
       colors: {
         brand: "#FD4F00",
       }

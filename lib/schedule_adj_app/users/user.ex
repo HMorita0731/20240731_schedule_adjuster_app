@@ -21,4 +21,10 @@ defmodule ScheduleAdjApp.Users.User do
     |> cast(attrs, [:name, :pass, :memo,:event_id])
     |> validate_required([:name, :pass, :event_id])
   end
+
+  def changeset_for_event_insert(user, attrs) do
+    user
+    |> cast(attrs, [:name, :pass, :memo])
+    |> validate_required([:name, :pass])
+  end
 end
