@@ -8,11 +8,11 @@ defmodule ScheduleAdjAppWeb.Router do
     plug :put_root_layout, html: {ScheduleAdjAppWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-  end
+  end #pipe
 
   pipeline :api do
     plug :accepts, ["json"]
-  end
+  end #pipe
 
   scope "/", ScheduleAdjAppWeb do
     pipe_through :browser
@@ -22,8 +22,10 @@ defmodule ScheduleAdjAppWeb.Router do
     live "/event/new", EventLive.New, :new
     post "/event/new/save", EventController, :next_page
     live "/event/new/date", EventLive.AddDate, :add_date
+    live "/event/show/:event_id", EventLive.Show, :show
+    live "/event/input/:event_id", EventLive.Input, :input
 
-  end
+  end #scope do
 
   # Other scopes may use custom stacks.
   # scope "/api", ScheduleAdjAppWeb do
@@ -44,6 +46,6 @@ defmodule ScheduleAdjAppWeb.Router do
 
       live_dashboard "/dashboard", metrics: ScheduleAdjAppWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
-    end
-  end
-end
+    end #scope d0
+  end #if
+end #mod

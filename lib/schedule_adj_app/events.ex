@@ -8,12 +8,19 @@ alias Ecto.Multi
 
 # イベント系DBやり取り機能　まとめ
 
-# イベントIDからイベントを取ってくる関数
+# イベントIDからイベントを取ってくる関数、戻り値はEvent構造体
 def get_event(id) do
   Event
   |> where([e], e.id == ^id)
   |> Repo.one()
 end
+
+def get_event_dates(id) do
+  EventDate
+  |> where([ed], ed.event_id == ^id)
+  |> Repo.all()
+end
+
 
 #イベントを作ってDBに入れる関数
 def create_event(attrs \\ %{}) do
@@ -23,22 +30,42 @@ def create_event(attrs \\ %{}) do
 end
 
 #トランザクション処理
-def insert_form(params) do
-  Multi.new()
-  |> Multi.insert(:event, Event.changeset(%Event{},params))
-  |> Multi.insert(:user, fn %{event: event} ->
-    User.changeset(%User{event_id: event.id}, params) end)
-  |> Multi.insert(:event_date,fn %{event: event} ->
-    EventDate.changeset(%EventDate{event_id: event.id},params) end)
-  |> Repo.transaction()
-end
+def insert_form(params, datetime_list) do
+  # Multi.new()
+  # |> Multi.insert(:event, Event.changeset(%Event{},params))
+  # |> Multi.insert(:user, fn %{event: event} ->
+  #   User.changeset(%User{event_id: event.id}, params) end)
+  # |> Multi.insert(:event_date,fn %{event: event} ->
+  #   EventDate.changeset(%EventDate{event_id: event.id},params) end)
+  # |> Repo.transaction()
 
+  Enum.zip(1..length(datetime_list), datetime_list)
+    |> Enum.reduce(
+          Multi.new() #この行から第二引数
+          |> Multi.insert(:event, Event.changeset(%Event{},params))
+          |> Multi.insert(:user, fn %{event: event} ->
+            User.changeset(%User{event_id: event.id}, params) end),
+     fn {index, datetime}, multi -> #この行から第三引数,multiに処理し終えたマルチ構造体が入っていく
+            Multi.insert(multi,
+             "event_date_#{index}",#←操作の名前
+             fn %{event: event} ->
+              EventDate.changeset(%EventDate{event_id: event.id}, %{event_dates: datetime})
+            end)
+    end)#reduce
+    |>Repo.transaction()
+end #insert_form
 
 #csを用意する関数
 def change_event(%Event{} = event, attrs \\ %{}) do
     Event.changeset(event, attrs)
-end
+end  #change_event
+
+  #Gets the event with the given signed token
+  def get_event_by_session_token(token) do
+    {:ok, query} = EventToken.verify_session_token_query(token)
+    Repo.one(query)
+  end
 
 
 
-end
+end #mod
