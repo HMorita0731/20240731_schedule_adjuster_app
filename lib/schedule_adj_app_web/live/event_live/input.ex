@@ -178,10 +178,9 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
   </div> <% end %><!-- for{date}のend --><!-- 日付表示ここまで -->
   <.simple_form
   for={@form}
-  phx-change="validate"
   phx-submit="insert_user_dates"
   action={~p"/event/event/show/:event_id"}
->
+  >
   <.input field={@form[:name]} type="text" label="ニックネーム(必須)" />
   <.input field={@form[:pass]} type="text" label="パスワード(必須)" />
   <.input field={@form[:memo]} type="textarea" label="備考" />
@@ -190,7 +189,7 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
       日程を登録する
     </.button>
   </:actions>
-</.simple_form>
+  </.simple_form>
     """
   end
 
@@ -241,8 +240,14 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
     end
 
     def handle_event("validate", %{"user_input" => params}, socket) do
-      cs = Users.change_user(socket.assigns.event, params)
+      IO.inspect(params)
+      cs = Users.change_user(socket.assigns.user_input, params)
       {:noreply, assign_form(socket, cs)}
+    end
+
+    def handle_event("insert_user_dates", %{"user_input" => params}, socket) do
+      IO.inspect(params)
+      {:noreply, socket}
     end
 
   def make_date_list(event_date_list) do
