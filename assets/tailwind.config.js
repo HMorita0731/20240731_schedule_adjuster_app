@@ -16,6 +16,7 @@ module.exports = {
       gridTemplateColumns: {
         // Simple 16 column grid
         '24': 'repeat(24, minmax(0, 1fr))',
+        '48': 'repeat(48, minmax(0, 1fr))'
       },
       colors: {
         brand: "#FD4F00",
