@@ -7,7 +7,8 @@ defmodule ScheduleAdjApp.Events.Event do
   schema "events" do
     field :title, :string
     field :memo, :string
-    field :status, :integer, default: 0 #集計中かどうか(0/集計中, 1/集計終了,)
+    # 集計中かどうか(0/集計中, 1/集計終了,)
+    field :status, :integer, default: 0
 
     has_many :users, User
     has_many :event_dates, EventDate

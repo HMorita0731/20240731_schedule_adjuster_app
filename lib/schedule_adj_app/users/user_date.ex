@@ -5,7 +5,6 @@ defmodule ScheduleAdjApp.Users.UserDate do
   alias ScheduleAdjApp.Events.EventDate
 
   schema "user_dates" do
-
     belongs_to :user, User
     belongs_to :event_date, EventDate
 
@@ -15,7 +14,7 @@ defmodule ScheduleAdjApp.Users.UserDate do
   @doc false
   def changeset(user_dates, attrs) do
     user_dates
-    |> cast(attrs, [:user_id,:event_date_id])
-    |> validate_required([:user_id,:event_date_id])
+    |> cast(attrs, [:user_id, :event_date_id])
+    |> validate_required([:user_id, :event_date_id])
   end
 end

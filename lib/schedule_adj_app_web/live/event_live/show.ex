@@ -11,7 +11,7 @@ alias Ecto.Multi
 def render(assigns) do
   ~H"""
 <!-- event = get_event(@event.id)-->
-<%!-- <%=  event["title"] %> --%>
+<!-- <%=  @event.title %>
 
     <%= if length(@add_date) > 0 do %> <!--@はsocket.assignsのキー名そのまま描く-->
        <!-- 時刻をソケットに入れる　-->
@@ -28,7 +28,7 @@ def render(assigns) do
           <div>
            &nbsp;
           </div>
-        <% end %><!-- forのend -->
+           <% end %><!-- forのend -->
         </div>
         <div class="text-center grid grid-cols-48 grid-rows-1">
           <%= list = Enum.to_list(0..23)
@@ -72,14 +72,18 @@ def render(assigns) do
     """
   end #render
 
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
+    IO.inspect(params,label: "パラム")
     socket
-    # |> assign()
+    |> assign(:event_id, params)
 
     {:ok, socket}
+
+  end #mount
+
    # event = Events.get_event_by_session_token(session["event_token"])
    # {:ok, assign(socket, :current_event, event)}
-  end #mount
+
 
   def handle_params(_params, _uri, socket) do
     socket =

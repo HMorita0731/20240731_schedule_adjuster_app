@@ -1,137 +1,184 @@
 add_date予定地
-  <.simple_form for={%{}} phx-submit="select_date"> <!-- ←event名の"select_date" -->
-      <.input name="add_date" type="date" value={Date.utc_today()}/> <!-- ←その時に送られる中身（parameter）の"add_date" -->
-        <.button>
-          日付を追加
-        </.button>
-    </.simple_form>
-    <%= if length(@add_date) > 0 do %> <!--@はsocket.assignsのキー名そのまま描く-->
+<.simple_form for={%{}} phx-submit="select_date">
+  <!-- ←event名の"select_date" -->
+  <.input name="add_date" type="date" value={Date.utc_today()} />
+  <!-- ←その時に送られる中身（parameter）の"add_date" -->
+  <.button>
+    日付を追加
+  </.button>
+</.simple_form>
+
+<%= if length(@add_date) > 0 do %>
+  <!--@はsocket.assignsのキー名そのまま描く-->
        <!-- 時刻をソケットに入れる　-->
-
-      <div :for={date <- @add_date} class="my-4 w-full">
-        <div class="grid grid-cols-3 grid-rows-1">
-         <%= date %>  <!-- 日付表示　-->
-         <div></div>
-         <div class= "flex justify-end">
-          <button  phx-click="delete_date" phx-value-date={"#{date}"}
-           class="w-1/3 text-xs hover:bg-gray-400 font-semibold hover:underline">
-            日付を削除
-          </button>
-         </div>
+  <div :for={date <- @add_date} class="my-4 w-full">
+    <div class="grid grid-cols-3 grid-rows-1">
+      <%= date %>
+      <!-- 日付表示　-->
+      <div></div>
+      
+      <div class="flex justify-end">
+        <button
+          phx-click="delete_date"
+          phx-value-date={"#{date}"}
+          class="w-1/3 text-xs hover:bg-gray-400 font-semibold hover:underline"
+        >
+          日付を削除
+        </button>
+      </div>
+    </div>
+    <!-- 時刻+空白　の繰り返し表示　-->
+    <div class="text-center grid grid-cols-24 grid-rows-1">
+      <%= list = Enum.to_list(0..11)
+              for x <- list do %>
+        <div class="bg-green-200 text-xs font-bold">
+          <%= x %>
         </div>
-
-         <!-- 時刻+空白　の繰り返し表示　-->
-         <div class="text-center grid grid-cols-24 grid-rows-1">
-          <%= list = Enum.to_list(0..11)
-              for x <- list do
-            %>
-          <div class="bg-green-200 text-xs font-bold">
-            <%= x %>
-          </div>
-          <div>
-              &nbsp;
-          </div>
-            <% end %><!-- forのend -->
-         </div><!--時刻gridここまで -->
+        
+        <div>
+          &nbsp;
+        </div>
+      <% end %>
+      <!-- forのend -->
+    </div>
+    <!--時刻gridここまで -->
           <!-- ボタン(00)+ボタン(30)　の繰り返し表示　-->
-         <div class="text-center grid grid-cols-24 grid-rows-1">
-          <%= list = Enum.to_list(0..11)
-            for x <- list do
-          %>
-
-          <div class="border-l border-y border-gray-600 last:border"><!--逆コの字型に枠線、最後だけ上下左右枠線-->
+    <div class="text-center grid grid-cols-24 grid-rows-1">
+      <%= list = Enum.to_list(0..11)
+            for x <- list do %>
+        <div class="border-l border-y border-gray-600 last:border">
+          <!--逆コの字型に枠線、最後だけ上下左右枠線-->
              <!-- add_datetime配列にその時間が入っている場合(00)-->
-            <%= if %{"date"=>date,"time"=>"#{x}:00","value"=>""} in @add_datetime do %>
-              <button phx-click="delete_time" phx-value-time={"#{x}:00"} phx-value-date={date}
-               class = "!bg-green-200 hover:!bg-green-400 w-full">
-                &nbsp;
-              </button>
-            <% else %><!-- add_datetime配列にその時間が入ってない場合(00)-->
-              <button phx-click="select_time" phx-value-time={"#{x}:00"} phx-value-date={date}
-               class = "!bg-blue-200 hover:!bg-blue-400 w-full">
-                &nbsp;
-              </button>
-            <% end %><!-- if-else -->
-          </div><!-- 00分のdiv -->
-
-          <div class="border-l border-y border-gray-600 last:border">
-            <!-- add_datetime配列にその時間が入っている場合(30)-->
-            <%= if %{"date"=>date,"time"=>"#{x}:30","value"=>""} in @add_datetime do %>
-              <button phx-click="delete_time" phx-value-time={"#{x}:30"} phx-value-date={date}
-               class = "!bg-green-200 hover:!bg-green-400 w-full">
-                 &nbsp;
-              </button>
-            <% else %><!-- add_datetime配列にその時間が入っていない場合(30)-->
-            <button phx-click="select_time" phx-value-time={"#{x}:30"} phx-value-date={date}
-             class = "!bg-blue-200 hover:!bg-blue-400 w-full">
+          <%= if %{"date"=>date,"time"=>"#{x}:00","value"=>""} in @add_datetime do %>
+            <button
+              phx-click="delete_time"
+              phx-value-time={"#{x}:00"}
+              phx-value-date={date}
+              class="!bg-green-200 hover:!bg-green-400 w-full"
+            >
               &nbsp;
             </button>
-           <% end %>
-          </div>
-          <% end %><!-- forのend -->
-       </div>
-
-            <!--午前中ここまで -->
+          <% else %>
+            <!-- add_datetime配列にその時間が入ってない場合(00)-->
+            <button
+              phx-click="select_time"
+              phx-value-time={"#{x}:00"}
+              phx-value-date={date}
+              class="!bg-blue-200 hover:!bg-blue-400 w-full"
+            >
+              &nbsp;
+            </button>
+          <% end %>
+          <!-- if-else -->
+        </div>
+        <!-- 00分のdiv -->
+        <div class="border-l border-y border-gray-600 last:border">
+          <!-- add_datetime配列にその時間が入っている場合(30)-->
+          <%= if %{"date"=>date,"time"=>"#{x}:30","value"=>""} in @add_datetime do %>
+            <button
+              phx-click="delete_time"
+              phx-value-time={"#{x}:30"}
+              phx-value-date={date}
+              class="!bg-green-200 hover:!bg-green-400 w-full"
+            >
+              &nbsp;
+            </button>
+          <% else %>
+            <!-- add_datetime配列にその時間が入っていない場合(30)-->
+            <button
+              phx-click="select_time"
+              phx-value-time={"#{x}:30"}
+              phx-value-date={date}
+              class="!bg-blue-200 hover:!bg-blue-400 w-full"
+            >
+              &nbsp;
+            </button>
+          <% end %>
+        </div>
+      <% end %>
+      <!-- forのend -->
+    </div>
+    <!--午前中ここまで -->
           <!-- 折り返し処理開始 時刻+空白　の繰り返し表示　-->
           <!-- 時刻+空白　の繰り返し表示　-->
-         <div class="text-center grid grid-cols-24 grid-rows-1">
-         <%= list = Enum.to_list(12..23)
-            for x <- list do
-          %>
-         <div class="bg-green-200 text-xs font-bold">
+    <div class="text-center grid grid-cols-24 grid-rows-1">
+      <%= list = Enum.to_list(12..23)
+            for x <- list do %>
+        <div class="bg-green-200 text-xs font-bold">
           <%= x %>
-         </div>
-         <div>
-            &nbsp;
-         </div>
-          <% end %><!-- forのend -->
-         </div><!--時刻gridここまで -->
+        </div>
+        
+        <div>
+          &nbsp;
+        </div>
+      <% end %>
+      <!-- forのend -->
+    </div>
+    <!--時刻gridここまで -->
           <!-- ボタン(00)+ボタン(30)　の繰り返し表示　-->
-         <div class="text-center grid grid-cols-24 grid-rows-1">
-          <%= list = Enum.to_list(12..23)
-            for x <- list do
-          %>
-
-          <div class="border-l border-y border-gray-600 last:border"><!--逆コの字型に枠線、最後だけ上下左右枠線-->
+    <div class="text-center grid grid-cols-24 grid-rows-1">
+      <%= list = Enum.to_list(12..23)
+            for x <- list do %>
+        <div class="border-l border-y border-gray-600 last:border">
+          <!--逆コの字型に枠線、最後だけ上下左右枠線-->
              <!-- add_datetime配列にその時間が入っている場合(00)-->
-            <%= if %{"date"=>date,"time"=>"#{x}:00","value"=>""} in @add_datetime do %>
-              <button phx-click="delete_time" phx-value-time={"#{x}:00"} phx-value-date={date}
-               class = "!bg-green-200 hover:!bg-green-400 w-full">
-                &nbsp;
-              </button>
-            <% else %>
-            <!-- add_datetime配列にその時間が入ってない場合(00)-->
-              <button phx-click="select_time" phx-value-time={"#{x}:00"} phx-value-date={date}
-               class = "!bg-blue-200 hover:!bg-blue-400 w-full">
-                &nbsp;
-              </button>
-            <% end %><!-- if-else -->
-          </div><!-- 00分のdiv -->
-
-          <div class="border-l border-y border-gray-600 last:border">
-            <!-- add_datetime配列にその時間が入っている場合(30)-->
-            <%= if %{"date"=>date,"time"=>"#{x}:30","value"=>""} in @add_datetime do %>
-              <button phx-click="delete_time" phx-value-time={"#{x}:30"} phx-value-date={date}
-               class = "!bg-green-200 hover:!bg-green-400 w-full">
-                 &nbsp;
-              </button>
-            <% else %>
-             <!-- add_datetime配列にその時間が入っていない場合(30)-->
-            <button phx-click="select_time" phx-value-time={"#{x}:30"} phx-value-date={date}
-              class = "!bg-blue-200 hover:!bg-blue-400 w-full">
+          <%= if %{"date"=>date,"time"=>"#{x}:00","value"=>""} in @add_datetime do %>
+            <button
+              phx-click="delete_time"
+              phx-value-time={"#{x}:00"}
+              phx-value-date={date}
+              class="!bg-green-200 hover:!bg-green-400 w-full"
+            >
               &nbsp;
             </button>
-           <% end %>
-          </div>
-          <% end %><!-- forのend -->
-       </div>
-       </div><!--日付表示div-->
-    <% end %><!-- if length のend -->
-
-    <div>
-    <.button phx-click="create">
-    イベントを登録
-    </.button>
+          <% else %>
+            <!-- add_datetime配列にその時間が入ってない場合(00)-->
+            <button
+              phx-click="select_time"
+              phx-value-time={"#{x}:00"}
+              phx-value-date={date}
+              class="!bg-blue-200 hover:!bg-blue-400 w-full"
+            >
+              &nbsp;
+            </button>
+          <% end %>
+          <!-- if-else -->
+        </div>
+        <!-- 00分のdiv -->
+        <div class="border-l border-y border-gray-600 last:border">
+          <!-- add_datetime配列にその時間が入っている場合(30)-->
+          <%= if %{"date"=>date,"time"=>"#{x}:30","value"=>""} in @add_datetime do %>
+            <button
+              phx-click="delete_time"
+              phx-value-time={"#{x}:30"}
+              phx-value-date={date}
+              class="!bg-green-200 hover:!bg-green-400 w-full"
+            >
+              &nbsp;
+            </button>
+          <% else %>
+            <!-- add_datetime配列にその時間が入っていない場合(30)-->
+            <button
+              phx-click="select_time"
+              phx-value-time={"#{x}:30"}
+              phx-value-date={date}
+              class="!bg-blue-200 hover:!bg-blue-400 w-full"
+            >
+              &nbsp;
+            </button>
+          <% end %>
+        </div>
+      <% end %>
+      <!-- forのend -->
     </div>
+  </div>
+  <!--日付表示div-->
+<% end %>
+<!-- if length のend -->
+<div>
+  <.button phx-click="create">
+    イベントを登録
+  </.button>
+</div>
 
-    <.back navigate={~p"/"}>ホーム画面へ戻る</.back>
+<.back navigate={~p"/"}>ホーム画面へ戻る</.back>

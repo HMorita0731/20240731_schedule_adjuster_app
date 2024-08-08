@@ -12,13 +12,13 @@ defmodule ScheduleAdjApp.Users.User do
 
     timestamps(type: :utc_datetime)
 
-    many_to_many(:event_dates,EventDate, join_through: "user_dates")
+    many_to_many(:event_dates, EventDate, join_through: "user_dates")
   end
 
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:name, :pass, :memo,:event_id])
+    |> cast(attrs, [:name, :pass, :memo, :event_id])
     |> validate_required([:name, :pass, :event_id])
   end
 
