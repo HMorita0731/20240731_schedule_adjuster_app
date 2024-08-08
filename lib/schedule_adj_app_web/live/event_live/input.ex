@@ -14,6 +14,7 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
 
   def render(assigns) do
     ~H"""
+    プルテスト
     <h2 class="text-4xl"><%= @event_detail.title %></h2>
      <% date_list = make_date_list(@event_dates)%>
      <% datetime_list = make_datetime_list(@event_dates)%>
@@ -27,7 +28,7 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
         <%= list = Enum.to_list(0..11)
               for x <- list do %>
         <div class="bg-green-200 text-xs font-bold">
-          <%= x %>
+          <%= "#{x}:00" %>
         </div>
         <div>
           &nbsp;
@@ -104,7 +105,7 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
         <%= list = Enum.to_list(12..23)
               for x <- list do %>
         <div class="bg-green-200 text-xs font-bold">
-          <%= x %>
+          <%= "#{x}:00" %>
         </div>
         <div>
           &nbsp;
