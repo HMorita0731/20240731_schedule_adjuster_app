@@ -32,14 +32,6 @@ defmodule ScheduleAdjApp.Events do
 
   # トランザクション処理
   def insert_form(params, datetime_list) do
-    # Multi.new()
-    # |> Multi.insert(:event, Event.changeset(%Event{},params))
-    # |> Multi.insert(:user, fn %{event: event} ->
-    #   User.changeset(%User{event_id: event.id}, params) end)
-    # |> Multi.insert(:event_date,fn %{event: event} ->
-    #   EventDate.changeset(%EventDate{event_id: event.id},params) end)
-    # |> Repo.transaction()
-
     Enum.zip(1..length(datetime_list), datetime_list)
     |> Enum.reduce(
       # この行から第二引数
@@ -53,7 +45,7 @@ defmodule ScheduleAdjApp.Events do
         Multi.insert(
           multi,
           # ←操作の名前
-          "event_date_#{index}",
+          "event_datetime_#{index}",
           fn %{event: event} ->
             EventDate.changeset(%EventDate{event_id: event.id}, %{event_dates: datetime})
           end
