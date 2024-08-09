@@ -1,9 +1,7 @@
 defmodule ScheduleAdjApp.Users do
   import Ecto.Query
   alias ScheduleAdjApp.Repo
-  # eventスキーマファイル
   alias ScheduleAdjApp.Events.Event
-  # event_dateスキーマファイル
   alias ScheduleAdjApp.Events.EventDate
   alias ScheduleAdjApp.Users.User
   alias ScheduleAdjApp.Users.UserDate
@@ -21,27 +19,23 @@ defmodule ScheduleAdjApp.Users do
   end
 
   # change_user_for_event_insert
-  def insert_user_data(params,user_datatime_list) do
-  Enum.zip(1..length(user_datetime_list), user_datetime_list)
+  def insert_user_data(user_datetime_id_list,params,id) do
+  Enum.zip(1..length(user_datetime_id_list), user_datetime_id_list)
     |> Enum.reduce(
       # この行から第二引数
       Multi.new()
-      |> Multi.insert(:user, fn %{event: event} ->
-        User.changeset(%User{event_id: event.id}, params)
-      end),
+      |> Multi.insert(:user,change_user(%User{event_id: id},params)),
       # この行から第三引数,multiに処理し終えたマルチ構造体が入っていく
-      fn {index, datetime}, multi ->
+      fn {index, datetime_id}, multi ->
         Multi.insert(
           multi,
           "user_date_#{index}",# ←操作の名前
-          fn %{event: event} ->
-            EventDate.changeset(%EventDate{event_id: event.id}, %{event_dates: datetime})
+          fn%{user: user} ->
+            UserDate.changeset(%UserDate{user_id: user.id}, %{event_date_id: datetime_id})
           end
         )
       end
-    )
-
-    # reduce
+    ) # reduce
     |> Repo.transaction()
   end
 end
