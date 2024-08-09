@@ -14,11 +14,25 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
 
   def render(assigns) do
     ~H"""
-    <h2 class="text-4xl"><%= @event_detail.title %></h2>
-     <% date_list = make_date_list(@event_dates)%>
-     <% datetime_list = make_datetime_list(@event_dates)%>
-     <%= %>
-     <%= if length(date_list) > 0 do %>
+   <h2 class="text-4xl"><%= @event_detail.title %></h2>
+   <div class=" grid grid-cols-3 grid-rows-1 w-1/2 my-4">
+        <.button
+        class="bg-blue-200 hover:bg-blue-400 text-neutral-950 border border-gray-600"
+        phx-click="select_time_all"
+        >
+        All 〇
+        </.button>
+        <div></div>
+        <.button
+        class="bg-red-200 hover:bg-red-400 text-neutral-950 border border-gray-600"
+        phx-click="delete_time_all"
+        >
+        All ×
+        </.button>
+   </div>
+    <% date_list = make_date_list(@event_dates)%>
+    <% datetime_list = make_datetime_list(@event_dates)%>
+    <%= if length(date_list) > 0 do %>
   <!--@はsocket.assignsのキー名そのまま描く-->
   <div :for={date <- date_list} class="my-4 w-full">
     <div>
@@ -229,22 +243,31 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
     {:noreply, socket}
   end
 
+  def handle_event("select_time_all", _params, socket) do
+    socket =
+      socket
+      # 複数選択した時刻をリストに追加していく
+      |> assign(:add_user_datetime, Enum.uniq(Enum.reduce(make_datetime_list(socket.assigns.event_dates),socket.assigns.add_user_datetime,fn event_datetime,add_user_datetime -> List.insert_at(add_user_datetime, -1, event_datetime) end)))
+     {:noreply, socket}
+  end
+
   def handle_event("delete_time", %{"date"=>date,"time"=>time}, socket) do
     new_add_user_datetime = socket.assigns.add_user_datetime -- [[date,time]]
 
     socket =
       socket
-      # 複数選択した時刻をリストに追加していく
       |> assign(:add_user_datetime, new_add_user_datetime)
 
       {:noreply, socket}
     end
 
-    def handle_event("validate", %{"user_input" => params}, socket) do
-      IO.inspect(params)
-      cs = Users.change_user(socket.assigns.user_input, params)
-      {:noreply, assign_form(socket, cs)}
-    end
+    def handle_event("delete_time_all", _params, socket) do
+      socket =
+        socket
+        |> assign(:add_user_datetime, [])
+
+        {:noreply, socket}
+      end
 
     def handle_event("insert_user_dates", %{"user_input" => params}, socket) do
       IO.inspect(params)
@@ -290,24 +313,5 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
   defp assign_form(socket, cs) do
     assign(socket, :form, to_form(cs, as: "user_input"))
   end
-
-  # date型から変換(まだ試してない)
-  # defp convert_from_datetime(datetime) do
-  # date = DateTime.to_string(datetime)|>String.split(" ") |> Enum.at(0)
-  # time = DateTime.to_string(datetime)|>String.split(" ") |> Enum.at(1)
-  # [date, time]
-  # end #convert_from_datetime
-
-# [error] GenServer #PID<0.966.0> terminating
-# ** (FunctionClauseError) no function clause matching in ScheduleAdjApp.Users.insert_user_data/3
-#     (schedule_adj_app 0.1.0) lib/schedule_adj_app/users.ex:22:
-#     ScheduleAdjApp.Users.insert_user_data([20, 21, 22, 23, 24, 25, 26, 27], %{"memo" => "テスト入力", "name" => "仮ユーザー", "pass" => "pass"}, 4)
-#     (schedule_adj_app 0.1.0) lib/schedule_adj_app_web/live/event_live/input.ex:255: ScheduleAdjAppWeb.EventLive.Input.handle_event/3
-#     (phoenix_live_view 1.0.0-rc.6) lib/phoenix_live_view/channel.ex:508: anonymous fn/3 in Phoenix.LiveView.Channel.view_handle_event/3
-#     (telemetry 1.2.1) c:/Users/artis/Desktop/elixir_2024_DE/schedule_adj_app/deps/telemetry/src/telemetry.erl:321: :telemetry.span/3
-#     (phoenix_live_view 1.0.0-rc.6) lib/phoenix_live_view/channel.ex:260: Phoenix.LiveView.Channel.handle_info/2
-#     (stdlib 5.0) gen_server.erl:1077: :gen_server.try_handle_info/3
-#     (stdlib 5.0) gen_server.erl:1165: :gen_server.handle_msg/6
-#     (stdlib 5.0) proc_lib.erl:251: :proc_lib.wake_up/3
 
 end
