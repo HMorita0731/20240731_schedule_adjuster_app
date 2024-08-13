@@ -9,7 +9,10 @@ defmodule ScheduleAdjAppWeb.EventLive do
 
   def render(assigns) do
     ~H"""
-    live_viewの導入テスト
+    <h1 class="text-4xl">Teki Paki</h1>
+    <.link href={~p"/event/new"}>
+    イベント新規作成
+    </.link>
     """
   end
 end
