@@ -52,7 +52,6 @@ defmodule ScheduleAdjApp.Events do
         )
       end
     )
-
     # reduce
     |> Repo.transaction()
   end

@@ -14,11 +14,25 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
 
   def render(assigns) do
     ~H"""
-    プルテスト
-    <h2 class="text-4xl"><%= @event_detail.title %></h2>
-     <% date_list = make_date_list(@event_dates)%>
-     <% datetime_list = make_datetime_list(@event_dates)%>
-     <%= if length(date_list) > 0 do %>
+   <h2 class="text-4xl"><%= @event_detail.title %></h2>
+   <div class=" grid grid-cols-3 grid-rows-1 w-1/2 my-4">
+        <.button
+        class="bg-blue-200 hover:bg-blue-400 text-neutral-950 border border-gray-600"
+        phx-click="select_time_all"
+        >
+        All 〇
+        </.button>
+        <div></div>
+        <.button
+        class="bg-red-200 hover:bg-red-400 text-neutral-950 border border-gray-600"
+        phx-click="delete_time_all"
+        >
+        All ×
+        </.button>
+   </div>
+    <% date_list = make_date_list(@event_dates)%>
+    <% datetime_list = make_datetime_list(@event_dates)%>
+    <%= if length(date_list) > 0 do %>
   <!--@はsocket.assignsのキー名そのまま描く-->
   <div :for={date <- date_list} class="my-4 w-full">
     <div>
@@ -229,26 +243,47 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
     {:noreply, socket}
   end
 
+  def handle_event("select_time_all", _params, socket) do
+    socket =
+      socket
+      # 複数選択した時刻をリストに追加していく
+      |> assign(:add_user_datetime, Enum.uniq(Enum.reduce(make_datetime_list(socket.assigns.event_dates),socket.assigns.add_user_datetime,fn event_datetime,add_user_datetime -> List.insert_at(add_user_datetime, -1, event_datetime) end)))
+     {:noreply, socket}
+  end
+
   def handle_event("delete_time", %{"date"=>date,"time"=>time}, socket) do
     new_add_user_datetime = socket.assigns.add_user_datetime -- [[date,time]]
 
     socket =
       socket
-      # 複数選択した時刻をリストに追加していく
       |> assign(:add_user_datetime, new_add_user_datetime)
 
       {:noreply, socket}
     end
 
-    def handle_event("validate", %{"user_input" => params}, socket) do
-      IO.inspect(params)
-      cs = Users.change_user(socket.assigns.user_input, params)
-      {:noreply, assign_form(socket, cs)}
-    end
+    def handle_event("delete_time_all", _params, socket) do
+      socket =
+        socket
+        |> assign(:add_user_datetime, [])
+
+        {:noreply, socket}
+      end
 
     def handle_event("insert_user_dates", %{"user_input" => params}, socket) do
       IO.inspect(params)
-      {:noreply, socket}
+      user_datetime_id_list = make_user_datetime_event_date_id(socket.assigns.event_dates,socket.assigns.add_user_datetime)
+
+      socket =
+      case Users.insert_user_data(user_datetime_id_list,params,socket.assigns.event_detail.id) do
+        {:ok,_transaction} ->
+          socket
+          |> put_flash(:info, "日程を登録しました")
+          |> redirect(to: ~p"/event/show/#{socket.assigns.event_detail.id}")
+        {:error, action, _, _} ->
+          socket
+          |> put_flash(:error, "#{action}で登録に失敗しました")
+        end
+        {:noreply, socket}
     end
 
   def make_date_list(event_date_list) do
@@ -266,16 +301,17 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
     |> Enum.map(fn [str_date, str_time] -> [str_date,String.slice(str_time,0,5)] end)
   end
 
+  def make_user_datetime_event_date_id(event_date_list,user_datetime) do
+    make_datetime_list(event_date_list)
+    |>Enum.zip(Enum.map(event_date_list,fn %{id: id} -> id end))
+    |>Enum.filter(fn {event_date,_id} -> event_date in user_datetime end)
+    |>Enum.map(fn{_event_date,id} -> id end)
+  end
+
 
   # ソケットにcsをフォーム型にして挿入
   defp assign_form(socket, cs) do
     assign(socket, :form, to_form(cs, as: "user_input"))
   end
 
-  # date型から変換(まだ試してない)
-  # defp convert_from_datetime(datetime) do
-  # date = DateTime.to_string(datetime)|>String.split(" ") |> Enum.at(0)
-  # time = DateTime.to_string(datetime)|>String.split(" ") |> Enum.at(1)
-  # [date, time]
-  # end #convert_from_datetime
 end
