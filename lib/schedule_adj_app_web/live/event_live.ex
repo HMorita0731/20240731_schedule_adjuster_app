@@ -9,10 +9,24 @@ defmodule ScheduleAdjAppWeb.EventLive do
 
   def render(assigns) do
     ~H"""
-    <h1 class="text-4xl">Teki Paki</h1>
-    <.link href={~p"/event/new"}>
-    イベント新規作成
-    </.link>
+    created-branch
+      <div class="text-center">
+        イベント作成者も参加者も見やすい！答えやすい！
+      </div>
+      <div class="text-center">
+        〇と×だけで構成された
+      </div>
+      <div class="text-center">
+        テキパキ決まるスケジュール調整アプリです
+      </div>
+
+      <div class="text-center my-20">
+        <.link patch={~p"/event/new"}>
+            <.button>イベントを作る</.button>
+        </.link>
+      </div>
+
+
     """
   end
 end
