@@ -9,7 +9,6 @@ defmodule ScheduleAdjAppWeb.EventLive do
 
   def render(assigns) do
     ~H"""
-    created-branch
       <div class="text-center">
         イベント作成者も参加者も見やすい！答えやすい！
       </div>
@@ -19,7 +18,6 @@ defmodule ScheduleAdjAppWeb.EventLive do
       <div class="text-center">
         テキパキ決まるスケジュール調整アプリです
       </div>
-
       <div class="text-center my-20">
         <.link patch={~p"/event/new"}>
             <.button>イベントを作る</.button>

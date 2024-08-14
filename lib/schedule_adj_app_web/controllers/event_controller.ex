@@ -11,6 +11,10 @@ defmodule ScheduleAdjAppWeb.EventController do
 
   # next_page
 
+#   def update(conn,params)do
+#   conn
+#   |> redirect(to: ~p"/event/update/:event_id/:user_id")
+# end
   # IO.inspect(conn,label: "コネクション")
   # adapter: {Bandit.Adapter, :...},
   # assigns: %{flash: %{}},

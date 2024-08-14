@@ -27,10 +27,15 @@ def render(assigns) do
       イベント作成者の方は、このページのURLを参加候補者に配布してください！
     </div>
 
-    <div>
-      <.button phx-click="input">
+
+    <div class="mt-4  grid grid-cols-3 grid-rows-1">
+      <.button phx-click="input"
+        class="w-1/2 ">
         回答する
       </.button>
+      <div class="text-right col-span-2">
+        全員が来れる日時には◎をつけてわかりやすく表示されます！
+      </div>
     </div>
 
     <!-- IO.inspect(event.event_dates, label: "いべんとでいつ")-->
@@ -43,16 +48,28 @@ def render(assigns) do
           <%= list = Enum.to_list(0..23)
             for x <- list do
           %>
-          <div class="bg-green-200 text-xs font-bold">
-            <%= x %>
-          </div>
-          <div>
-           &nbsp;
-          </div>
+          <%= if [date, "#{x}:30"] in @event_datetime_list && all_okay(get_eventdate([date, "#{x}:30"],event), event) do%>
+                <div class="bg-green-400 border-l border-y border-white last:border text-xs">
+                  <%= x %>
+                </div>
+            <%else%>
+              <div class="bg-green-200 border-l border-y border-white last:border text-xs">
+              <%= x %>
+              </div>
+            <% end %>
+            <%= if [date, "#{x}:30"] in @event_datetime_list && all_okay(get_eventdate([date, "#{x}:30"],event), event) do%>
+                <div class="bg-green-400 border-l border-y border-white last:border">
+                  &nbsp;
+                </div>
+            <%else%>
+              <div class="bg-green-200 border-l border-y border-white last:border">
+                &nbsp;
+              </div>
+            <% end %>
           <% end %><!-- forのend -->
         </div>
 
-        <div :for={user <- @user_stru_list -- [Enum.at(@user_stru_list, 0)]} class="mt-1"><!--＠＠＠適当に書いてる, user構造体のリストがuserにはいる-->
+        <div :for={user <- @user_stru_list} class="mt-1"><!--＠＠＠適当に書いてる, user構造体のリストがuserにはいる-->
           <div class = "mt-1">
 
           <button
@@ -66,36 +83,43 @@ def render(assigns) do
             <div>
             <form
             phx-submit="check_pass"
-             class="">
-              <input type="text" name="pass">
-              <.button              >
+
+            >
+              <input type="text" name="pass" class="h-1">
+              <button class="h-2/5 text-xs text-white bg-black px-1 rounded-md">
                 編集
-              </.button>
+              </button>
             </form>
             </div>
           <% end%>
           </div>
-          <div class="text-center grid grid-cols-48 grid-rows-1">
+          <div class="text-center  grid grid-cols-48 grid-rows-1">
             <%= list = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11","12","13","14","15","16","17","18","19","20","21","22","23"]
               for x <- list do
             %>
-              <div class="border-l border-y border-gray-600 last:border text-center">
+              <div class="border-l border-y border-gray-600 last:border ">
                 <% datetime_list = utc_datetime(user)%> <!--#[["2024-07-31", "15:30"],...]-->
                 <%= if  [date, "#{x}:00"] in @event_datetime_list do %>
                 <%= if [date, "#{x}:00"] in datetime_list do %>
-                    <%= if all_okay(get_eventdate([date, "#{x}:00"]), event) do %>
-                    <div class="!bg-green-400">
-                    &nbsp;
+                    <%= if all_okay(get_eventdate([date, "#{x}:00"],event), event) do %>
+                    <div class="!bg-blue-400 text-xs h-full flex items-center">
+                    <div>
+                    ◎
+                    </div>
                     </div>
                   <% else %>
-                  <div class=" bg-blue-400">
-                  &nbsp;
+                  <div class=" bg-blue-200 text-xs h-full flex items-center">
+                  <div>
+                  〇
+                  </div>
                   </div>
                   <% end %>
                 <% else %>
                 <div phx-value-time={"#{x}:00"} phx-value-date={date}
-                class = "bg-red-200 w-full">
-                &nbsp;
+                class = "bg-red-200 w-full flex items-center">
+                  <div>
+                    ×
+                  </div>
                 </div>
                       <% end %>
               <% else %>
@@ -108,19 +132,25 @@ def render(assigns) do
               <div class="border-l border-y border-gray-600 last:border text-center"><!--30分からのところつかさどってる-->
               <%= if  [date, "#{x}:30"] in @event_datetime_list do %>
                 <%= if [date, "#{x}:30"] in datetime_list do %>
-                <%= if all_okay(get_eventdate([date, "#{x}:30"]), event) do %>
-                    <div class="!bg-green-400">
-                    &nbsp;
+                <%= if all_okay(get_eventdate([date, "#{x}:30"],event), event) do %>
+                <div class="!bg-blue-400 text-xs h-full flex items-center">
+                    <div>
+                    ◎
                     </div>
-                    <%else%>
-                  <div class=" bg-blue-400">
-                  &nbsp;
+                </div>
+                  <% else %>
+                  <div class=" bg-blue-200 text-xs h-full flex items-center">
+                  <div>
+                  〇
+                  </div>
                   </div>
                   <%end%>
                 <% else %>
                 <div phx-value-time={"#{x}:30"} phx-value-date={date}
-                class = "bg-red-200 w-full">
-                &nbsp;
+                class = "bg-red-200 w-full flex items-center">
+                <div>
+                ×
+                </div>
                 </div>
                 <% end %>
               <% else %>
@@ -138,9 +168,9 @@ def render(assigns) do
       </div><!-- for -->
     <% end %><!-- if length のend -->
 
-    <div><!-- 回答者コメント全体 -->
+    <div class="my-4"><!-- 回答者コメント全体 -->
       <div :for={user <- @user_stru_list -- [Enum.at(@user_stru_list, 0)]} class="mt-1 my-4 bg-blue-200">
-        <%= if user.memo != "" || is_nil(user.memo) == true do %>
+        <%= unless is_nil(user.memo)  do %>
           <%=user.name%>のコメント：<%=user.memo%>
         <%end%><!--if end-->
       </div><!--:for={user <- @user_stru_list-->
@@ -187,6 +217,7 @@ def render(assigns) do
         |>assign(:event_datetime_list, str_datetime_list) #日時のリスト
         |>assign(:user_stru_list, user_stru_list)
         |> assign(:set_user_id, nil)
+        |> assign(trigger_submit: false)
         #IO.inspect(socket.assigns, label: "新ソケット")
         {:noreply, socket}
     end #handle
@@ -229,8 +260,6 @@ def render(assigns) do
           def all_okay(eventdate, event) do
              event_length = length(Repo.preload(event, :users).users)
              eventdate_length = length(Repo.preload(eventdate, :users).users)
-            # IO.inspect(event_length, label: "れんぐす")
-            # IO.inspect(Repo.preload(eventdate, :users).users, label: "れんぐす２")
               if event_length == eventdate_length do
                 true
               else
@@ -240,12 +269,13 @@ def render(assigns) do
           end
 
           #文字列のdatetimeからeventdate構造体取得
-          def get_eventdate([date, time]) do
+          def get_eventdate([date, time],event) do
 
             x = ScheduleAdjAppWeb.EventLive.AddDate.convert_datetime(date, time)
             eventdate =
             EventDate
             |> where([e], e.event_dates == ^x)
+            |> where([e], e.event_id == ^event.id)
             |> Repo.one()
 
           end#%Eventdate{}
@@ -258,6 +288,7 @@ def render(assigns) do
         socket =
         if pass == user.pass do
           socket
+          #|> assign(trigger_submit: true)
           |> redirect(to: ~p"/event/update/#{user.event_id}/#{user.id}")
         else
           socket
@@ -269,6 +300,10 @@ def render(assigns) do
       end
 
 end #mod
+
+# phx-trigger-action={@trigger_submit}
+#             action={~p"/event/update/#{user.event_id}/#{user.id}"}
+#             method="post
 
 # 回答画面遷移ボタン(input)
 # 名前クリックで回答編集（パス要求）へ
