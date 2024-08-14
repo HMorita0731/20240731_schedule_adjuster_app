@@ -174,7 +174,7 @@ defmodule ScheduleAdjAppWeb.EventLive.AddDate do
   # save_event
 
   # datetimeを作る文字列になっているdateとtimeをintにしてからdate型に変換
-  defp convert_datetime(date, time) do
+  def convert_datetime(date, time) do
     [year, month, day] = Enum.map(String.split(date, "-"), fn x -> String.to_integer(x) end)
     [hour, minute] = Enum.map(String.split(time, ":"), fn x -> String.to_integer(x) end)
     {:ok, int_date} = Date.new(year, month, day)

@@ -6,14 +6,14 @@ alias ScheduleAdjApp.Repo
 alias ScheduleAdjApp.Events.Event #eventスキーマファイル
 alias ScheduleAdjApp.Events.EventDate #event_dateスキーマファイル
 alias ScheduleAdjApp.Users.User
-alias ScheduleAdjApp.Users.UserDate #＠＠＠足した
+alias ScheduleAdjApp.Users.UserDate
 alias ScheduleAdjApp.Events
 alias Ecto.Multi
 
 def render(assigns) do
   ~H"""
     <% event = Events.get_event(@event) %>
-    <div class="text-center text-xl font-bold">
+    <div class="text-center text-xl font-bold bg-green-200">
       イベント名： <%= event.title %>
     </div>
     <div>
@@ -21,6 +21,9 @@ def render(assigns) do
     </div>
     <div>
       備考：<%= event.memo %>
+    </div>
+    <div class="font-bold">
+      イベント作成者の方は、このページのURLを参加候補者に配布してください！
     </div>
 
     <div>
@@ -48,9 +51,11 @@ def render(assigns) do
           <% end %><!-- forのend -->
         </div>
 
-        <div :for={user <- @user_stru_list} class="mt-1"><!--＠＠＠適当に書いてる, user構造体のリストがuserにはいる-->
+        <div :for={user <- @user_stru_list -- [Enum.at(@user_stru_list, 0)]} class="mt-1"><!--＠＠＠適当に書いてる, user構造体のリストがuserにはいる-->
           <div class = "mt-1">
-            <%= user.name %>
+            <.link href={~p"/event/update/#{event}/#{user}"}>
+              <%= user.name %>
+            </.link>
           </div>
           <div class="text-center grid grid-cols-48 grid-rows-1">
             <%= list = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11","12","13","14","15","16","17","18","19","20","21","22","23"]
@@ -58,16 +63,22 @@ def render(assigns) do
             %>
             <div class="border-l border-y border-gray-600 last:border text-center">
               <% datetime_list = utc_datetime(user)%> <!--#[["2024-07-31", "15:30"],...]-->
-                <div class="grid grid-cols-48 grid-rows-1 bg-gray-200">
+                <div class="!bg-gray-200">
                   <%= if [date, "#{x}:00"] in @event_datetime_list do %>
-                    <div class="!bg-green-200 w-full">
-                      〇
-                    </div>
                     <%= if [date, "#{x}:00"] in datetime_list do %>
+                      <!--ハイライトあきらめない場合ここに書き足す-->
+                      <%= if all_okay(get_eventdate([date, "#{x}:00"]), event) do %>
+                      <div class="!bg-red-200">
+                        &nbsp;
+                      </div>
+                      <% end %>
                       <div class="">
-                        ◎
+                        &nbsp;
                       </div>
                     <% end %>
+                    <div class="!bg-green-200 w-full">
+                      &nbsp;
+                    </div>
                   <% else %>
                     <div class="!bg-blue-200 w-full">
                       &nbsp;
@@ -77,20 +88,25 @@ def render(assigns) do
 
             </div>
 
-            <div class="border-l border-y border-gray-600 last:border text-center grid grid-cols-48 grid-rows-1 bg-gray-200"><!--30分からのところつかさどってる-->
+            <div class="border-l border-y border-gray-600 last:border text-center bg-gray-200"><!--30分からのところつかさどってる-->
             <%= if  [date, "#{x}:30"] in @event_datetime_list do %>
-              <div phx-value-time={"#{x}:30"} phx-value-date={date}
-               class = "bg-green-200 w-full">
-                〇
-              </div>
               <%= if [date, "#{x}:30"] in datetime_list do %>
-                <div class="">
-                  ◎
+              <%= if all_okay(get_eventdate([date, "#{x}:30"]), event) do %>
+                      <div class="!bg-red-200">
+                        &nbsp;
+                      </div>
+                      <% end %>
+                <div class="!bg-blue-200 w-full">
+                &nbsp;
                 </div>
                     <% end %>
+              <div phx-value-time={"#{x}:30"} phx-value-date={date}
+               class = "!bg-green-200 w-full">
+               &nbsp;
+              </div>
             <% else %>
               <div phx-value-time={"#{x}:30"} phx-value-date={date}
-               class = "bg-blue-200 w-full">
+               class = "!bg-blue-200 w-full">
                 &nbsp;
               </div>
               <% end %>
@@ -102,6 +118,14 @@ def render(assigns) do
        </div><!-- 表終わり  -->
       </div><!-- for -->
     <% end %><!-- if length のend -->
+
+    <div><!-- 回答者コメント全体 -->
+      <div :for={user <- @user_stru_list -- [Enum.at(@user_stru_list, 0)]} class="mt-1 my-4 bg-blue-200">
+        <%= if user.memo != "" || is_nil(user.memo) == true do %>
+          <%=user.name%>のコメント：<%=user.memo%>
+        <%end%><!--if end-->
+      </div><!--:for={user <- @user_stru_list-->
+    </div><!-- 回答者コメント全体 -->
 
     <.back navigate={~p"/"}>ホーム画面へ戻る</.back>
 
@@ -154,9 +178,6 @@ def render(assigns) do
       #イベント参加者全員取得
       joinners = Enum.map(list_users(socket.assigns.event), fn user_stru -> user_stru.name end)
 
-
-
-
       socket =
         socket
         |>assign(:organizer, organizer) #主催者の名前
@@ -165,7 +186,7 @@ def render(assigns) do
         |>assign(:event_datetime_list, str_datetime_list) #日時のリスト
         #|>assign(:reply, user_dates_stru_list_list) #
         #|>assign(:add_datetime, [])#error防止
-        |>assign(:user_datetime_list, user_datetime_detail_list_list)
+        #|>assign(:user_datetime_list, user_datetime_detail_list_list)
         |>assign(:user_stru_list, user_stru_list)
         #IO.inspect(socket.assigns, label: "新ソケット")
         {:noreply, socket}
@@ -225,6 +246,31 @@ def render(assigns) do
             |> Enum.map(fn id -> get_detail_date(id).event_dates end)
             |> convert_for_show()
           end #[["2024-07-31", "15:30"],...]
+
+          #全員〇の日ハイライト
+          def all_okay(eventdate, event) do
+             event_length = length(Repo.preload(event, :users).users) - 1
+             eventdate_length = length(Repo.preload(eventdate, :users).users)
+            # IO.inspect(event_length, label: "れんぐす")
+            # IO.inspect(Repo.preload(eventdate, :users).users, label: "れんぐす２")
+              if event_length == eventdate_length do
+                true
+              else
+                false
+              end
+
+          end
+
+          #文字列のdatetimeからeventdate構造体取得
+          def get_eventdate([date, time]) do
+
+            x = ScheduleAdjAppWeb.EventLive.AddDate.convert_datetime(date, time)
+            eventdate =
+            EventDate
+            |> where([e], e.event_dates == ^x)
+            |> Repo.one()
+
+          end#%Eventdate{}
 
           # [["2024-08-28", "15:30:00Z"], ...]
 

@@ -9,7 +9,22 @@ defmodule ScheduleAdjAppWeb.EventLive do
 
   def render(assigns) do
     ~H"""
-    live_viewの導入テスト
+      <div class="text-center">
+        イベント作成者も参加者も見やすい！答えやすい！
+      </div>
+      <div class="text-center">
+        〇と×だけで構成された
+      </div>
+      <div class="text-center">
+        テキパキ決まるスケジュール調整アプリです
+      </div>
+
+      <div class="text-center my-20">
+        <.link patch={~p"/event/new"}>
+            <.button>イベントを作る</.button>
+        </.link>
+      </div>
+
     """
   end
 end
