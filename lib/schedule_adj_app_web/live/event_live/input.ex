@@ -101,7 +101,6 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
                 class="!bg-red-200 hover:!bg-red-400 w-full"
               >
                 ×
-                <%= "#{x}:30" %>
               </button>
             <%end%><!--if[@add_user_datetime] -->
           <% else %>

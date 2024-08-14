@@ -45,10 +45,10 @@ def render(assigns) do
         <%= date %>
        <div class="w-full">
         <div class="text-center grid grid-cols-48 grid-rows-1">
-          <%= list = Enum.to_list(0..23)
+          <%= list = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11","12","13","14","15","16","17","18","19","20","21","22","23"]
             for x <- list do
           %>
-          <%= if [date, "#{x}:30"] in @event_datetime_list && all_okay(get_eventdate([date, "#{x}:30"],event), event) do%>
+          <%= if [date, "#{x}:00"] in @event_datetime_list && all_okay(get_eventdate([date, "#{x}:00"],event), event) do%>
                 <div class="bg-green-400 border-l border-y border-white last:border text-xs">
                   <%= x %>
                 </div>
