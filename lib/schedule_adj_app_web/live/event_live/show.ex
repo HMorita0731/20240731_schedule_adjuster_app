@@ -79,61 +79,57 @@ def render(assigns) do
             <%= list = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11","12","13","14","15","16","17","18","19","20","21","22","23"]
               for x <- list do
             %>
-            <div class="border-l border-y border-gray-600 last:border text-center">
-              <% datetime_list = utc_datetime(user)%> <!--#[["2024-07-31", "15:30"],...]-->
-              <%= if  [date, "#{x}:00"] in @event_datetime_list do %>
-              <%= if [date, "#{x}:00"] in datetime_list do %>
-                  <%= if all_okay(get_eventdate([date, "#{x}:00"]), event) do %>
-                  <div class="!bg-red-200">
+              <div class="border-l border-y border-gray-600 last:border text-center">
+                <% datetime_list = utc_datetime(user)%> <!--#[["2024-07-31", "15:30"],...]-->
+                <%= if  [date, "#{x}:00"] in @event_datetime_list do %>
+                <%= if [date, "#{x}:00"] in datetime_list do %>
+                    <%= if all_okay(get_eventdate([date, "#{x}:00"]), event) do %>
+                    <div class="!bg-green-400">
+                    &nbsp;
+                    </div>
+                  <% else %>
+                  <div class=" bg-blue-400">
                   &nbsp;
                   </div>
-                 <% else %>
-                <div class=" bg-blue-400">
+                  <% end %>
+                <% else %>
+                <div phx-value-time={"#{x}:00"} phx-value-date={date}
+                class = "bg-red-200 w-full">
                 &nbsp;
                 </div>
-                <% end %>
+                      <% end %>
               <% else %>
-              <div phx-value-time={"#{x}:00"} phx-value-date={date}
-               class = "bg-red-200 w-full">
-               &nbsp;
-              </div>
-                    <% end %>
-            <% else %>
-              <div phx-value-time={"#{x}:00"} phx-value-date={date}
-               class = "bg-gray-200 w-full">
-                &nbsp;
-              </div>
-              <% end %>
-            </div>
-            <div class="border-l border-y border-gray-600 last:border text-center"><!--30分からのところつかさどってる-->
-            <%= if  [date, "#{x}:30"] in @event_datetime_list do %>
-              <%= if [date, "#{x}:30"] in datetime_list do %>
-               <%= if all_okay(get_eventdate([date, "#{x}:30"]), event) do %>
-                <div class="!bg-red-200">
+                <div phx-value-time={"#{x}:00"} phx-value-date={date}
+                class = "bg-gray-200 w-full">
                   &nbsp;
                 </div>
+                <% end %>
+              </div>
+              <div class="border-l border-y border-gray-600 last:border text-center"><!--30分からのところつかさどってる-->
+              <%= if  [date, "#{x}:30"] in @event_datetime_list do %>
+                <%= if [date, "#{x}:30"] in datetime_list do %>
+                <%= if all_okay(get_eventdate([date, "#{x}:30"]), event) do %>
+                    <div class="!bg-green-400">
+                    &nbsp;
+                    </div>
+                    <%else%>
+                  <div class=" bg-blue-400">
+                  &nbsp;
+                  </div>
+                  <%end%>
                 <% else %>
-                <div class=" bg-blue-400">
+                <div phx-value-time={"#{x}:30"} phx-value-date={date}
+                class = "bg-red-200 w-full">
                 &nbsp;
                 </div>
                 <% end %>
               <% else %>
-              <div phx-value-time={"#{x}:30"} phx-value-date={date}
-               class = "bg-red-200 w-full">
-               &nbsp;
+                <div phx-value-time={"#{x}:30"} phx-value-date={date}
+                class = "bg-gray-200 w-full">
+                  &nbsp;
+                </div>
+                <% end %>
               </div>
-                    <% end %>
-              <div phx-value-time={"#{x}:30"} phx-value-date={date}
-               class = "!bg-green-200 w-full">
-               &nbsp;
-              </div>
-            <% else %>
-              <div phx-value-time={"#{x}:30"} phx-value-date={date}
-               class = "bg-gray-200 w-full">
-                &nbsp;
-              </div>
-              <% end %>
-            </div>
             <% end %><!-- forのend -->
 
           </div><!-- 45 -->
@@ -141,13 +137,6 @@ def render(assigns) do
        </div><!-- 表終わり  -->
       </div><!-- for -->
     <% end %><!-- if length のend -->
-    <div><!-- 回答者コメント全体 -->
-      <div :for={user <- @user_stru_list -- [Enum.at(@user_stru_list, 0)]} class="mt-1 my-4 bg-blue-200">
-        <%= if user.memo != "" do %>
-          <%=user.name%>のコメント：<%=user.memo%>
-        <%end%><!--if end-->
-      </div><!--:for={user <- @user_stru_list-->
-    </div><!-- 回答者コメント全体 -->
 
     <div><!-- 回答者コメント全体 -->
       <div :for={user <- @user_stru_list -- [Enum.at(@user_stru_list, 0)]} class="mt-1 my-4 bg-blue-200">
@@ -232,11 +221,13 @@ def render(assigns) do
           unless user_id == "#{socket.assigns.set_user_id}" do
             String.to_integer(user_id)
           end
+          {:noreply, assign(socket, :set_user_id, id)}
+      end
 
 
           #全員〇の日ハイライト
           def all_okay(eventdate, event) do
-             event_length = length(Repo.preload(event, :users).users) - 1
+             event_length = length(Repo.preload(event, :users).users)
              eventdate_length = length(Repo.preload(eventdate, :users).users)
             # IO.inspect(event_length, label: "れんぐす")
             # IO.inspect(Repo.preload(eventdate, :users).users, label: "れんぐす２")
@@ -260,8 +251,7 @@ def render(assigns) do
           end#%Eventdate{}
 
           # [["2024-08-28", "15:30:00Z"], ...]
-       # {:noreply, assign(socket, :set_user_id, id)}
-      #end
+
 
       def handle_event("check_pass", %{"pass" => pass}, socket) do
         user = Users.get_user(socket.assigns.set_user_id)

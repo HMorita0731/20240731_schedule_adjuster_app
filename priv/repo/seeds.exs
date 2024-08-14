@@ -33,7 +33,7 @@ event_dates =
     # 9
     %EventDate{event_dates: DateTime.new!(~D"2024-08-06", ~T"17:30:00"), event_id: 2},
     # 10
-    %EventDate{event_dates: DateTime.new!(~D"2024-08-06", ~T"09:00:00"), event_id: 3},
+    %EventDate{event_dates: DateTime.new!(~D"2024-08-05", ~T"09:00:00"), event_id: 3},
     # 11
     %EventDate{event_dates: DateTime.new!(~D"2024-08-06", ~T"09:00:00"), event_id: 3},
     # 12
@@ -70,9 +70,9 @@ users =
     # 5
     %User{name: "goro", pass: "e", memo: "", event_id: 2},
     # 6
-    %User{name: "goro", pass: "e", memo: "", event_id: 2},
+    %User{name: "akari", pass: "e", memo: "", event_id: 2},
     # 7
-    %User{name: "goro", pass: "e", memo: "", event_id: 2},
+    %User{name: "yuki", pass: "e", memo: "", event_id: 2},
     # 8
     %User{name: "rokuro", pass: "f", memo: "", event_id: 2},
     # 9
