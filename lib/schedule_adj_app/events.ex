@@ -23,6 +23,12 @@ defmodule ScheduleAdjApp.Events do
     |> Repo.all()
   end
 
+  def get_detail_date(event_date_id) do
+    EventDate
+    |> where([ed], ed.id == ^event_date_id)
+    |> Repo.one()
+  end
+
   # イベントを作ってDBに入れる関数
   def create_event(attrs \\ %{}) do
     Event

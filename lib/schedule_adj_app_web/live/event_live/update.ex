@@ -1,20 +1,24 @@
-defmodule ScheduleAdjAppWeb.EventLive.Input do
+defmodule ScheduleAdjAppWeb.EventLive.Update do
   use ScheduleAdjAppWeb, :live_view
 
   import Ecto.Query
   alias ScheduleAdjApp.Repo
-  # eventスキーマファイル
   alias ScheduleAdjApp.Events.Event
-  # event_dateスキーマファイル
   alias ScheduleAdjApp.Events.EventDate
   alias ScheduleAdjApp.Events
   alias ScheduleAdjApp.Users.User
+  alias ScheduleAdjApp.Users.UserDate
   alias ScheduleAdjApp.Users
   alias Ecto.Multi
+  alias ScheduleAdjAppWeb.EventLive.Input
 
   def render(assigns) do
     ~H"""
-   <h2 class="text-4xl"><%= @event_detail.title %></h2>
+　　入力変更予定
+    <%= @event_detail.title %>
+    <%= @user.name %>
+
+    <h2 class="text-4xl"><%= @event_detail.title %></h2>
    <div class=" grid grid-cols-3 grid-rows-1 w-1/2 my-4">
         <.button
         class="bg-blue-200 hover:bg-blue-400 text-neutral-950 border border-gray-600"
@@ -30,8 +34,8 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
         All ×
         </.button>
    </div>
-    <% date_list = make_date_list(@event_dates)%>
-    <% datetime_list = make_datetime_list(@event_dates)%>
+    <% date_list = Input.make_date_list(@event_dates)%>
+    <% datetime_list = Input.make_datetime_list(@event_dates)%>
     <%= if length(date_list) > 0 do %>
   <!--@はsocket.assignsのキー名そのまま描く-->
   <div :for={date <- date_list} class="my-4 w-full">
@@ -193,48 +197,44 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
   </div> <% end %><!-- for{date}のend --><!-- 日付表示ここまで -->
   <.simple_form
   for={@form}
-  phx-submit="insert_user_dates"
-  action={~p"/event/event/show/:event_id"}
+  phx-submit="update_user_dates"
+  action={~p"/event/show/:event_id"}
   >
   <.input field={@form[:name]} type="text" label="ニックネーム(必須)" />
   <.input field={@form[:pass]} type="text" label="パスワード(必須)" />
   <.input field={@form[:memo]} type="textarea" label="備考" />
   <:actions>
     <.button>
-      日程を登録する
+      日程を変更する
     </.button>
   </:actions>
   </.simple_form>
     """
   end
 
-  def mount(%{"event_id" => params}, session, socket) do
-
-    socket =
+  def mount(%{"event_id" => event_id,"user_id" => user_id},_session,socket) do
+#    Parameters: %{"event_id" => "1", "user_id" => "2"}
+    socket=
       socket
-      |> assign(:event_id, params)
-      |> assign(:add_user_datetime,[])
-
-    {:ok, socket}
+      |>assign(:event_id,event_id)
+      |>assign(:user_id,user_id)
+      |>assign(:event_detail,Events.get_event(event_id))
+      |>assign(:user,Users.get_user(user_id))
+      {:ok, socket}
   end
 
   def handle_params(params, _uri, socket) do
     socket =
       socket
-      |> assign(:event_detail, Events.get_event(socket.assigns.event_id))
       |> assign(:event_dates, Events.get_event_dates(socket.assigns.event_id))
-      |> assign(:add_user_datetime, make_datetime_list(Events.get_event_dates(socket.assigns.event_id)))
-      |> assign(:page_title, "日程登録")
-      |> assign(:user,%User{})
-      |> assign_form(Users.change_user(%User{}))
-      #%Event{}と[%EventDate{}]
-
+      |> assign(:add_user_datetime, Input.make_datetime_list(socket.assigns.user.event_dates))
+      |> assign(:page_title, "日程変更")
+      |> assign_form(Users.change_user(socket.assigns.user))
     {:noreply, socket}
   end
-  # handle
 
-   # 時間選択機能
-   def handle_event("select_time", %{"date"=>date,"time"=>time}, socket) do
+  # 時間選択機能
+  def handle_event("select_time", %{"date"=>date,"time"=>time}, socket) do
     socket =
       socket
       # 複数選択した時刻をリストに追加していく
@@ -247,7 +247,7 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
     socket =
       socket
       # 複数選択した時刻をリストに追加していく
-      |> assign(:add_user_datetime, Enum.uniq(Enum.reduce(make_datetime_list(socket.assigns.event_dates),socket.assigns.add_user_datetime,fn event_datetime,add_user_datetime -> List.insert_at(add_user_datetime, -1, event_datetime) end)))
+      |> assign(:add_user_datetime, Enum.uniq(Enum.reduce(Input.make_datetime_list(socket.assigns.event_dates),socket.assigns.add_user_datetime,fn event_datetime,add_user_datetime -> List.insert_at(add_user_datetime, -1, event_datetime) end)))
      {:noreply, socket}
   end
 
@@ -269,47 +269,24 @@ defmodule ScheduleAdjAppWeb.EventLive.Input do
         {:noreply, socket}
       end
 
-    def handle_event("insert_user_dates", %{"user_input" => params}, socket) do
-      user_datetime_id_list = make_user_datetime_event_date_id(socket.assigns.event_dates,socket.assigns.add_user_datetime)
-
-      socket =
-      case Users.insert_user_data(user_datetime_id_list,params,socket.assigns.event_detail.id) do
-        {:ok,_transaction} ->
-          socket
-          |> put_flash(:info, "日程を登録しました")
-          |> redirect(to: ~p"/event/show/#{socket.assigns.event_detail.id}")
-        {:error, action, _, _} ->
-          socket =
+      def handle_event("update_user_dates", %{"user_input" => params}, socket) do
+        user_datetime_id_list = Input.make_user_datetime_event_date_id(socket.assigns.event_dates,socket.assigns.add_user_datetime)
+        socket =
+        case Users.update_user_data(user_datetime_id_list,params,socket.assigns.user_id,socket.assigns.event_id) do
+          {:ok,_transaction} ->
             socket
-            |> put_flash(:error, "必須項目を入力してください")
-        end
-        {:noreply, socket}
-    end
-
-  def make_date_list(event_date_list) do
-    #[%EventDate{}]
-    Enum.map(event_date_list,fn %{event_dates: event_date} -> DateTime.to_string(event_date) end)
-    |> Enum.map(fn str_datetime -> String.split(str_datetime," ") end)
-    |> Enum.map(fn [str_date, _str_time] -> str_date end)
-    |> Enum.uniq()
-  end
-
-  def make_datetime_list(event_date_list) do
-    #[%EventDate{}]
-    Enum.map(event_date_list,fn %{event_dates: event_date} -> DateTime.to_string(event_date) end)
-    |> Enum.map(fn str_datetime -> String.split(str_datetime," ") end)
-    |> Enum.map(fn [str_date, str_time] -> [str_date,String.slice(str_time,0,5)] end)
-  end
-
-  def make_user_datetime_event_date_id(event_date_list,user_datetime) do
-    make_datetime_list(event_date_list)
-    |>Enum.zip(Enum.map(event_date_list,fn %{id: id} -> id end))
-    |>Enum.filter(fn {event_date,_id} -> event_date in user_datetime end)
-    |>Enum.map(fn{_event_date,id} -> id end)
-  end
+            |> put_flash(:info, "日程を変更しました")
+            |> redirect(to: ~p"/event/show/#{socket.assigns.event_detail.id}")
+          {:error, action, _, _} ->
+            socket =
+              socket
+              |> assign_form(User.changeset(%User{},params))
+              |> put_flash(:error, "必須項目を入力してください")
+          end
+          {:noreply, socket}
+      end
 
 
-  # ソケットにcsをフォーム型にして挿入
   defp assign_form(socket, cs) do
     assign(socket, :form, to_form(cs, as: "user_input"))
   end
