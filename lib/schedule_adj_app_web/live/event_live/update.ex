@@ -14,7 +14,6 @@ defmodule ScheduleAdjAppWeb.EventLive.Update do
 
   def render(assigns) do
     ~H"""
-　　入力変更予定
     <%= @event_detail.title %>
     <%= @user.name %>
 
@@ -105,7 +104,6 @@ defmodule ScheduleAdjAppWeb.EventLive.Update do
                 class="!bg-red-200 hover:!bg-red-400 w-full"
               >
                 ×
-                <%= "#{x}:30" %>
               </button>
             <%end%><!--if[@add_user_datetime] -->
           <% else %>
@@ -248,7 +246,8 @@ defmodule ScheduleAdjAppWeb.EventLive.Update do
       socket
       # 複数選択した時刻をリストに追加していく
       |> assign(:add_user_datetime, Enum.uniq(Enum.reduce(Input.make_datetime_list(socket.assigns.event_dates),socket.assigns.add_user_datetime,fn event_datetime,add_user_datetime -> List.insert_at(add_user_datetime, -1, event_datetime) end)))
-     {:noreply, socket}
+      IO.inspect(socket.assigns.add_user_datetime)
+      {:noreply, socket}
   end
 
   def handle_event("delete_time", %{"date"=>date,"time"=>time}, socket) do

@@ -29,6 +29,7 @@ defmodule ScheduleAdjAppWeb.Router do
     live "/event/show/:event_id", EventLive.Show, :show
     live "/event/input/:event_id", EventLive.Input, :input
     live "/event/update/:event_id/:user_id", EventLive.Update, :update
+    # post "/event/update/:event_id/:user_id", EventLiveCotroller, :update
   end
 
   # scope do
