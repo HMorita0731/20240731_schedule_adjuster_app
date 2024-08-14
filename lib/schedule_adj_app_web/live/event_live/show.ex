@@ -51,9 +51,25 @@ def render(assigns) do
 
         <div :for={user <- @user_stru_list} class="mt-1"><!--＠＠＠適当に書いてる, user構造体のリストがuserにはいる-->
           <div class = "mt-1">
-          <.link href={~p"/event/update/#{event.id}/#{user.id}"}>
+          <button
+          phx-click="input_pass"
+          phx-value-user_id= {user.id}
+          >
             <%= user.name %>
-          </.link>
+
+          </button>
+          <%=if @set_user_id == user.id do %>
+            <div>
+            <form
+            phx-submit="check_pass"
+             class="">
+              <input type="text" name="pass">
+              <.button              >
+                編集
+              </.button>
+            </form>
+            </div>
+          <% end%>
           </div>
           <div class="text-center grid grid-cols-48 grid-rows-1">
             <%= list = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11","12","13","14","15","16","17","18","19","20","21","22","23"]
@@ -153,6 +169,7 @@ def render(assigns) do
         |>assign(:event_date_list, str_date_list) #日程のリスト
         |>assign(:event_datetime_list, str_datetime_list) #日時のリスト
         |>assign(:user_stru_list, user_stru_list)
+        |> assign(:set_user_id, nil)
         #IO.inspect(socket.assigns, label: "新ソケット")
         {:noreply, socket}
     end #handle
@@ -182,16 +199,29 @@ def render(assigns) do
       |> convert_for_show()
       end #[["2024-07-31", "15:30"],...]
 
-          # [["2024-08-28", "15:30:00Z"], ...]
+      def handle_event("input_pass", %{"user_id" => user_id}, socket) do
+        id =
+          unless user_id == "#{socket.assigns.set_user_id}" do
+            String.to_integer(user_id)
+          end
 
-            # event_idで各種情報を取ってくる
-            # title取得関数
-            # memo(備考)取得関数
-            # 作成者名取得関数
+        {:noreply, assign(socket, :set_user_id, id)}
+      end
 
-# event_dateのリスト取得関数
+      def handle_event("check_pass", %{"pass" => pass}, socket) do
+        user = Users.get_user(socket.assigns.set_user_id)
+        socket =
+        if pass == user.pass do
+          socket
+          |> redirect(to: ~p"/event/update/#{user.event_id}/#{user.id}")
+        else
+          socket
+          |> put_flash(:error,"パスワードが違います")
+        end
 
-# date_time取得関数
+        {:noreply, socket}
+
+      end
 
 end #mod
 

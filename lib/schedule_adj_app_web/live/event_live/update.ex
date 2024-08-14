@@ -280,7 +280,8 @@ defmodule ScheduleAdjAppWeb.EventLive.Update do
           {:error, action, _, _} ->
             socket =
               socket
-              |> put_flash(:error, "#{action}で失敗しました")
+              |> assign_form(User.changeset(%User{},params))
+              |> put_flash(:error, "必須項目を入力してください")
           end
           {:noreply, socket}
       end
